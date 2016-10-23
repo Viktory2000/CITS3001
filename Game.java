@@ -261,24 +261,33 @@ public class Game{
     }
     log("The Government Spies were "+spyString+".");
     
-    if(fails>2){
-    	log("Government Wins! "+fails+" missions failed.");
-    	return 0;
-    }
-    else{
-    	log("Resistance Wins! "+fails+" missions failed.");
-    	return 1;
-    }
-
-  }
-
+		if (spyString.indexOf('E') >= 0) {// ie E is a spy
+			log("E is a spy");
+			if (fails > 2) {
+				log("Government Wins! " + fails + " missions failed.");
+				return 1;
+			} else {
+				log("Resistance Wins! " + fails + " missions failed.");
+				return 0;
+			}
+		} else {
+			log("E is a Resistance");
+			if (fails > 2) {
+				log("Government Wins! " + fails + " missions failed.");
+				return 0;
+			} else {
+				log("Resistance Wins! " + fails + " missions failed.");
+				return 1;
+			}
+		}
+	}
 
   /**
    * Sets up game with random agents and plays
    **/
   public static void main(String[] args){
-	  double result = 0;
-	  double size = 10000;
+	  int result = 0;
+	  int size = 10000;
 	  for (int i = 0; i < size; i++){
 		  Game g = new Game();
 		  g.addPlayer(new RandomAgent());
@@ -288,8 +297,9 @@ public class Game{
 		  g.addPlayer(new RandomAgent());
 		  g.setup();
 		  result += g.play();
+		  System.out.println(result);
 	  }
-	  System.out.println("SUCCESS RATE OF NAIVE = " + result/size*100 + "%");
+	  System.out.println("SUCCESS RATE OF NAIVE = " + (double)result/size*100 + "%");
   }
 }  
         
