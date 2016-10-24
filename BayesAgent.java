@@ -9,7 +9,7 @@ public class BayesAgent implements Agent{
 	private String name;
 	private boolean spy = false;
 	private Map<Character,Integer> spyState;
-	private String[] worldSpies = {"AB", "AC","AD","AE","BC","BD","BE","CD","CE"};
+	private String[] worldSpies;
 	
 	private double[] worldProb;
 	
@@ -17,19 +17,61 @@ public class BayesAgent implements Agent{
 	private String mission="";
 	private int traitors=0;
 	
+	private boolean init = true; //used for the initialization of the games
+	
 	private double betrayProb = 0.8;
+	
+	private ArrayList<String> worldSpiesList = new ArrayList<String>();
 	
 	public BayesAgent(){
 		spyState = new HashMap<Character, Integer>();
-		worldProb = new double[9];
 		
-		for(int i = 0; i<9; i++){
-			worldProb[i] = 0.5;			
-		}
-		
-	}  
+	}
+	
+    // The method that prints all possible strings of length k.  It is
+    //  mainly a wrapper over recursive function printAllKLengthRec()
+    public void printAllKLength(String set, int k) {
+        int n = set.length();        
+        int max = 0;
+        printAllKLengthRec(set, "", n, k, k, max);
+    }
+ 
+    // The main recursive method to print all possible strings of length k
+    public void printAllKLengthRec(String set, String prefix, int n, int k, int length, int max) {
+    	
+        // Base case: k is 0, print prefix
+        if (k == 0 && prefix.length() == length ) {
+            System.out.println(prefix);
+            worldSpiesList.add(prefix);
+            return;
+        }else if(k ==0)
+        	return;
+ 
+        // One by one add all characters from set and recursively 
+        // call for k equals to k-1
+        for (int i = 0; i < n; ++i) {
+        	
+        	for(int j = 0; j<prefix.length(); j++){
+        		if((int)prefix.charAt(j)>max)
+        	    max = (int)prefix.charAt(j);
+        	}
+        		
+        	String newPrefix;
+            // Next character of input added
+        	if(prefix.indexOf(set.charAt(i)) == -1 && (int)set.charAt(i)>max){
+        		newPrefix = prefix + set.charAt(i); 
+        	}else{
+        		newPrefix = prefix;
+        	}
+             //System.out.println(prefix);
+            // k is decreased, because we have added a new character
+            printAllKLengthRec(set, newPrefix, n, k - 1, length, max);
+        }
+    }
+	
 
-
+	 
+	
 	/**
 	* Reports the current status, inlcuding players name, the name of all players, the names of the spies (if known), the mission number and the number of failed missions
 	* @param name a string consisting of a single letter, the agent's names.
@@ -46,13 +88,31 @@ public class BayesAgent implements Agent{
 		for(char c : players.toCharArray())
 		{
 			spyState.put(c,0);
-		}
+		}    	
+		
+		if(init){
+		printAllKLength(players,spies.length());
+		
+    	worldSpies = worldSpiesList.toArray( new String[worldSpiesList.size()]);
+		worldProb = new double[worldSpies.length];
+		
 		if(spy) //If a spy, mark which other players are spies
 		{
 			for(char c : spies.toCharArray())
-				if(!spyState.containsKey(c))
+				if(!spyState.containsKey(c)) 
 					spyState.put(c,1);
+			
+			for(int i = 0; i< worldProb.length; i++)
+				if(spies.contains(worldSpies[i]))	//Because both format in same method can do this
+						worldProb[i] = 0.1;	
+		}else{
+			for(int i = 0; i< worldProb.length; i++)
+				worldProb[i] = 1/worldProb.length;
 		}
+		System.out.println("probabilities initialized");
+		init = false;
+		}
+
 	}
   
 	/**
@@ -82,7 +142,7 @@ public class BayesAgent implements Agent{
 				}
 			}
 		} else {
-			for (int i = 0; i < 9; i++) { // Find lowest probability world
+			for (int i = 0; i < worldProb.length; i++) { // Find lowest probability world
 				temp = 1;
 				if (worldProb[i] <= temp && worldSpies[i].indexOf(name) == -1) {
 					temp = worldProb[i];
@@ -172,15 +232,15 @@ public class BayesAgent implements Agent{
    * @param traitors the number of people on the mission who chose to betray (0 for success, greater than 0 for failure)
    **/
   public void get_Traitors(int traitors){
-	  double[] ProbAGivW = new double[9];
+	  double[] ProbAGivW = new double[worldProb.length];
 	  double ProbA = 0;
 	  boolean solved = false;
-	  
+	  System.out.println("TRAITORS CALLED");
 		this.traitors = traitors;
 		if(traitors == mission.length()) //If everyone betrayed, everyone must be a spy
 		{
 			solved = true; //As world is now known
-			for(int i = 0; i<9 ; i++){
+			for(int i = 0; i<worldProb.length ; i++){
 				if(worldSpies[i].equals(mission)){
 					worldProb[i] = 1;
 				}else{
@@ -192,8 +252,8 @@ public class BayesAgent implements Agent{
 				spyState.put(c,1);
 			}
 			
-		}else if(traitors>=0 && !solved){
-			for(int i = 0; i<9 ; i++){
+		}else if(traitors>=0 && !solved){ // someone betrayed, but not everyone on mission
+			for(int i = 0; i<worldProb.length ; i++){
 				
 				if(mission.indexOf(worldSpies[i].charAt(0)) >= 0 && mission.indexOf(worldSpies[i].charAt(1))>=0){				
 					// 2 Spies on the mission in this world
@@ -226,7 +286,7 @@ public class BayesAgent implements Agent{
 						ProbAGivW[i] = 0;
 					}
 					
-					//0 Spies on th mission in this world
+					//0 Spies on the mission in this world
 
 					
 					if(traitors == 0){
@@ -237,8 +297,8 @@ public class BayesAgent implements Agent{
 				ProbA += ProbAGivW[i];
 			}
 			
-			for(int i = 0; i<9; i++){
-				worldProb[i] = ProbAGivW[i]*worldProb[i]/ProbA;
+			for(int i = 0; i<worldProb.length; i++){
+				worldProb[i] = ProbAGivW[i]*worldProb[i]/(ProbA/worldProb.length);
 				System.out.println(worldSpies[i]+ " HAS PROBABILITY = " + worldProb[i]);
 			}
 			
@@ -258,7 +318,7 @@ public class BayesAgent implements Agent{
 	  String World = "";
 	  double temp = 0;
 	  
-		for (int i = 0; i < 9; i++) { // Find lowest probability world
+		for (int i = 0; i < worldProb.length; i++) { // Find lowest probability world
 			temp = 1;
 			if (worldProb[i] >= temp) {
 				temp = worldProb[i];
