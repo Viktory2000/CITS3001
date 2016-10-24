@@ -22,7 +22,9 @@ public class Game{
   private boolean started = false;
   private long stopwatch = 0;
 
+  private Character leader;
 
+  
   /**
    * Creates an empty game.
    * Game log printed to stdout
@@ -106,6 +108,7 @@ public class Game{
       started= true;
       log("Game set up. Spys allocated");
     }
+    leader = (char)(rand.nextInt(numPlayers)+65);
   }
 
   /** 
@@ -150,7 +153,8 @@ public class Game{
    * @return a String containing the names of the agents being sent on the mission
    * */
   private String nominate(int round){
-    Character leader = (char)(rand.nextInt(numPlayers)+65);
+    leader = (char)((int)(leader+1)%numPlayers+65);
+	System.out.println("LEADER =" + leader);
     int mNum = missionNum[numPlayers-5][round-1];
     stopwatchOn(); String team = players.get(leader).do_Nominate(mNum); stopwatchOff(1000,leader);
     char[] tA = team.toCharArray();
@@ -287,15 +291,17 @@ public class Game{
    **/
   public static void main(String[] args){
 	  int result = 0;
-	  int size = 10000;
+	  int size = 1000; //Seems to give consistent results at 10000 games (within 1%)
 	  for (int i = 0; i < size; i++){
 		  Game g = new Game();
-		  g.addPlayer(new RandomAgent());
-		  g.addPlayer(new RandomAgent());
-		  g.addPlayer(new RandomAgent());
-		  g.addPlayer(new RandomAgent());
-		  g.addPlayer(new RandomAgent());
+		  g.addPlayer(new NaiveAgent());
+		  g.addPlayer(new NaiveAgent());
+		  g.addPlayer(new NaiveAgent());
+		  g.addPlayer(new NaiveAgent());
+		  g.addPlayer(new BayesAgent());
+		  System.out.println("Added all players");
 		  g.setup();
+		  System.out.println("Finished setup");
 		  result += g.play();
 		  //System.out.println(result);
 	  }
