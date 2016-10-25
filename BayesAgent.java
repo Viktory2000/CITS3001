@@ -170,7 +170,7 @@ public class BayesAgent implements Agent{
 				temp = -1;
 				if (worldProb[i] >= temp) {
 					temp = worldProb[i];
-					World = worldSpies[i];// Lowest Probability world ie lowest probability spies
+					World = worldSpies[i];// Highest Probability world ie lowest probability spies
 					//System.out.println("Lowest Probability World found = " + World);
 				}
 			}
@@ -309,7 +309,7 @@ public class BayesAgent implements Agent{
 					if(traitors == 0){
 						ProbAGivW[i] = (1-betrayProb)*(1-betrayProb);
 					}else if(traitors == 1){
-						ProbAGivW[i] = 2*betrayProb*(1-betrayProb);
+						ProbAGivW[i] = 1-betrayProb*betrayProb - (1-betrayProb)*(1-betrayProb);
 					}else{
 						ProbAGivW[i] = betrayProb*betrayProb;
 					}
@@ -342,12 +342,12 @@ public class BayesAgent implements Agent{
 					}
 
 				}
-				ProbA += ProbAGivW[i];
-				System.out.println("PROBABILITY OF A   " + ProbA/worldProb.length);
+				ProbA += ProbAGivW[i]*worldProb[i];
+				System.out.println("PROBABILITY OF A   " + ProbA);
 			}
 			
-			for(int i = 0; i<worldProb.length; i++){
-				worldProb[i] = ProbAGivW[i]*worldProb[i]/(ProbA/worldProb.length);
+			for(int i = 0; i<worldProb.length && !solved; i++){
+				worldProb[i] = ProbAGivW[i]*worldProb[i]/(ProbA);
 				System.out.println(worldSpies[i]+ " HAS PROBABILITY = " + worldProb[i]);
 			}
 			
