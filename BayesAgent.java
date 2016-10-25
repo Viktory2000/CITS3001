@@ -20,6 +20,7 @@ public class BayesAgent implements Agent{
 	private boolean init = true; //used for the initialization of the games
 	
 	private double betrayProb = 0.8;
+	private double maxWorldProb;
 	
 	private ArrayList<String> worldSpiesList = new ArrayList<String>();
 	
@@ -98,16 +99,24 @@ public class BayesAgent implements Agent{
 		
 		if(spy) //If a spy, mark which other players are spies
 		{
+			System.out.println(" E IS A SPY **********");
+			System.out.println(worldProb[0]);
 			for(char c : spies.toCharArray())
 				if(!spyState.containsKey(c)) 
 					spyState.put(c,1);
-			
+			System.out.println(worldProb[0]);
 			for(int i = 0; i< worldProb.length; i++)
 				if(spies.contains(worldSpies[i]))	//Because both format in same method can do this
-						worldProb[i] = 0.1;	
+						worldProb[i] = 1.0;	
+			System.out.println(worldProb[0]);
 		}else{
+			System.out.println(" E IS RESISTANCE **********");
+			System.out.println(worldProb[0]);
+			System.out.println(worldProb.length);
 			for(int i = 0; i< worldProb.length; i++)
-				worldProb[i] = 1/worldProb.length;
+				worldProb[i] = (double)1/worldProb.length;
+			System.out.println(worldProb[0]);
+			maxWorldProb = 1/worldProb.length;
 		}
 		System.out.println("probabilities initialized");
 		init = false;
@@ -171,25 +180,32 @@ public class BayesAgent implements Agent{
 	* */
 	public boolean do_Vote() {
 		
-		if (proposed.indexOf(name) == -1)
-			return false; // Do not approve mission not containing self
-		
+		if(proposed.indexOf(name) == -1)
+			return false; //Do not approve mission not containing self
 		int spynum = 0;
-		
-		for (char c : proposed.toCharArray()) // Count known spies on proposed mission
+		for(char c : proposed.toCharArray()) //Count known spies on proposed mission
 		{
-			if (spyState.get(c) != 0)
+			if(spyState.get(c) != 0)
 				spynum++;
 		}
-		if (spy) {
-			if (spynum == proposed.length()) // Do not approve a mission
-												// containing only spies
+		if(spy)
+		{
+			if(spynum > proposed.length()-1) //Do not approve a mission containing only spies
 				return false;
 			else
 				return true;
 		} else {
-			return (spynum == 0); // Only approve missions containing no known
-									// spies
+			for (int i = 0; i < worldProb.length; i++) {
+				if (proposed.contains(worldSpies[i])) {
+					if (worldProb[i] < maxWorldProb / 2) {
+						return false;
+					} else {
+						return true;
+					}
+				} else {
+					return false;
+				}
+			}
 		}
 	}
 
@@ -236,9 +252,11 @@ public class BayesAgent implements Agent{
 	  double ProbA = 0;
 	  boolean solved = false;
 	  System.out.println("TRAITORS CALLED");
+	  System.out.println(worldProb[0]);
 		this.traitors = traitors;
 		if(traitors == mission.length()) //If everyone betrayed, everyone must be a spy
 		{
+			System.out.println("NUM TRAITORS = NUM SPIES");
 			solved = true; //As world is now known
 			for(int i = 0; i<worldProb.length ; i++){
 				if(worldSpies[i].equals(mission)){
@@ -252,12 +270,12 @@ public class BayesAgent implements Agent{
 				spyState.put(c,1);
 			}
 			
-		}else if(traitors>=0 && !solved){ // someone betrayed, but not everyone on mission
+		}else if(traitors>=0 && !solved && !spy){ // someone betrayed, but not everyone on mission
 			for(int i = 0; i<worldProb.length ; i++){
-				
+				System.out.println("LESS TRAITORS THAN SPIES");			
 				if(mission.indexOf(worldSpies[i].charAt(0)) >= 0 && mission.indexOf(worldSpies[i].charAt(1))>=0){				
 					// 2 Spies on the mission in this world
-					
+					System.out.println("2 SPIES");
 					if(traitors == 0){
 						ProbAGivW[i] = (1-betrayProb)*(1-betrayProb);
 					}else if(traitors == 1){
@@ -271,7 +289,7 @@ public class BayesAgent implements Agent{
 						worldProb[i] = 0;
 						ProbAGivW[i] = 0;
 					}
-					
+					System.out.println("1 SPY");
 					//1 spy on the mission in this world
 					
 					if(traitors == 0){
@@ -285,7 +303,7 @@ public class BayesAgent implements Agent{
 						worldProb[i] = 0;
 						ProbAGivW[i] = 0;
 					}
-					
+					System.out.println("NO SPIES");
 					//0 Spies on the mission in this world
 
 					
@@ -316,17 +334,17 @@ public class BayesAgent implements Agent{
    * */
   public String do_Accuse(){
 	  String World = "";
-	  double temp = 0;
+	  double temp = 0.0;
 	  
 		for (int i = 0; i < worldProb.length; i++) { // Find lowest probability world
-			temp = 1;
-			if (worldProb[i] >= temp) {
+			temp = 0;
+			if (worldProb[i] > temp) {
 				temp = worldProb[i];
 				World = worldSpies[i]; // Lowest Probability world ie lowest probability spies
-				//System.out.println("Lowest Probability World found = " + World);
+				System.out.println("Highest Probability World found = " + World);
 			}
 		}
-		
+		maxWorldProb = temp;
 		return World;
   }
 

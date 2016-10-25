@@ -257,7 +257,7 @@ public class Game{
       for(Character c: players.keySet()){
         log(c+" accuses "+accusations.get(c));
         for(Character a: players.keySet()){
-          stopwatchOn();
+          stopwatchOn();  
           players.get(a).get_Accusation(c+"", accusations.get(c));
           stopwatchOff(100,c);
         }
@@ -291,7 +291,7 @@ public class Game{
    **/
   public static void main(String[] args){
 	  int result = 0;
-	  int size = 10000; //Seems to give consistent results at 10000 games (within 1%)
+	  int size = 1000; //Seems to give consistent results at 10000 games (within 1%)
 	  for (int i = 0; i < size; i++){
 		  Game g = new Game();
 		  g.addPlayer(new NaiveAgent());
@@ -305,7 +305,7 @@ public class Game{
 		  result += g.play();
 		  //System.out.println(result);
 	  }
-	  System.out.println("SUCCESS RATE OF Bayes = " + (double)result/size*100 + "%");
+	  System.out.println("Games Won by E = " + (double)result/size*100 + "%");
   }
 }  
         
