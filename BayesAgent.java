@@ -272,7 +272,8 @@ public class BayesAgent implements Agent{
 			
 		}else if(traitors>=0 && !solved && !spy){ // someone betrayed, but not everyone on mission
 			for(int i = 0; i<worldProb.length ; i++){
-				System.out.println("LESS TRAITORS THAN SPIES");			
+				System.out.println("LESS TRAITORS THAN SPIES");
+				if(worldProb[i]>=1) solved = true;
 				if(mission.indexOf(worldSpies[i].charAt(0)) >= 0 && mission.indexOf(worldSpies[i].charAt(1))>=0){				
 					// 2 Spies on the mission in this world
 					System.out.println("2 SPIES");
