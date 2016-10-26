@@ -19,9 +19,9 @@ public class BayesAgent implements Agent{
 	private int traitors=0;
 	
 	private boolean init = true; //used for the initialization of the games
+	private boolean firstMiss = true; //used for things that need to happen on first mission only (do_vote)
 	
 	private double betrayProb = 0.8;
-	private double maxWorldProb;
 	
 	private ArrayList<String> worldSpiesList = new ArrayList<String>();
 	
@@ -95,42 +95,58 @@ public class BayesAgent implements Agent{
 		if(init){
 		printAllKLength(players,spies.length());
 		
-    	worldSpies = worldSpiesList.toArray( new String[worldSpiesList.size()]);
-		worldProb = new double[worldSpies.length];
+    	worldSpies = worldSpiesList.toArray( new String[worldSpiesList.size()]); //Holds which spies are in each world
+		worldProb = new double[worldSpies.length];			//Probability of world 
 		boolean isWorld;
+		int count = 0;
 		
 		if(spy) //If a spy, mark which other players are spies
 		{
 			System.out.println(" E IS A SPY **********");
-			for(char c : spies.toCharArray())
+			for(char c : spies.toCharArray())//Add other spies into spyState hashmap
 				if(!spyState.containsKey(c)) 
 					spyState.put(c,1);
-			System.out.println(worldProb[0]);
-			for(int i = 0; i< worldProb.length; i++){//look through spy list and determine if actual world same as that world
-				isWorld = true;
-				for(char c : (worldSpies[i].toCharArray())){
-					if(spies.indexOf(c) == -1 ) //tests if any of the real spies are not in that worlds spies
-								isWorld = false;
-				}
-				
-				if(isWorld)
-					worldProb[i] = 1.0; //Set the actual world to 1
-				else
-					worldProb[i] = 0.0;	//Set the others to 0
-				
-				maxWorldProb = 1.0;
-				
-				System.out.println("World Probability = " + worldProb[0]);
-			}
+			//System.out.println(worldProb[0]);
+			for(int i = 0; i< worldProb.length; i++) //set world probabilities
+				if(worldSpies[i].indexOf(name)!= -1)
+					count ++;
+			for(int i = 0; i< worldProb.length; i++) //set world probabilities
+				if(worldSpies[i].indexOf(name)== -1)
+				worldProb[i] = (double)1/count;
+			
+			//System.out.println(worldProb[0]);
+			
+			
+//			for(int i = 0; i< worldProb.length; i++){//look through spy list and determine if actual world same as that world
+//				isWorld = true;
+//				for(char c : (worldSpies[i].toCharArray())){
+//					if(spies.indexOf(c) == -1 ) //tests if any of the real spies are not in that worlds spies
+//						isWorld = false;
+//				}
+//
+//				if(isWorld)
+//					worldProb[i] = 1.0; //Set the actual world to 1
+//				else
+//					worldProb[i] = 0.0;	//Set the others to 0
+//
+//				maxWorldProb = 1.0;
+//
+//				System.out.println("World Probability = " + worldProb[0]);
+			//}
+
 		}else{
 			System.out.println(" E IS RESISTANCE **********");
 			System.out.println(worldProb[0]);
-			System.out.println(worldProb.length);
-			for(int i = 0; i< worldProb.length; i++)
-				worldProb[i] = (double)1/worldProb.length;
-			System.out.println(worldProb[0]);
+			//System.out.println(worldProb.length);
 			
-			maxWorldProb = 1/worldProb.length;
+			for(int i = 0; i< worldProb.length; i++) //set world probabilities
+				if(worldSpies[i].indexOf(name)!= -1)
+					count ++;
+			for(int i = 0; i< worldProb.length; i++) //set world probabilities
+				if(worldSpies[i].indexOf(name)== -1)
+				worldProb[i] = (double)1/count;
+			//System.out.println(worldProb[0]);
+			
 		}
 		System.out.println("probabilities initialized");
 		init = false;
@@ -152,35 +168,76 @@ public class BayesAgent implements Agent{
 		String World = "";
 
 			
-		if(spy){
-			while (n < number) {
-				for (char c : players.toCharArray()) {
-
-					if (nom.indexOf(c) == -1 && spyState.get(c) == 0) // Nominate
-																								
-					{
-						nom += c;
-						n++;
-						break;
-					}
+//		if(spy){
+//			while (n < number) {
+//				for (char c : players.toCharArray()) {
+//
+//					if (nom.indexOf(c) == -1 && spyState.get(c) == 0) // Nominate
+//																								
+//					{
+//						nom += c;
+//						n++;
+//						break;
+//					}
+//				}
+//			}
+//		} else {
+	
+		
+//		
+//			for (int i = 0; i < worldProb.length; i++) { // Find lowest probability world
+//				temp = -1;
+//				if (worldProb[i] >= temp) {
+//					temp = worldProb[i];
+//					World = worldSpies[i];// Highest Probability world ie lowest probability spies
+//					//System.out.println("Lowest Probability World found = " + World);
+//				}
+//			}
+//			// Lowest probability worlds now found need to utilize by nominating from them
+//			while(n < number){
+//				if(nom.indexOf(players.toCharArray()[n]) == -1 && World.indexOf(players.toCharArray()[n])==-1)
+//					nom = nom + players.toCharArray()[n];
+//				n++;
+//			}
+//		
+		int count;
+		double[] spyProb = new double[players.length()];
+		for(char c: players.toCharArray()){
+			count = 0;
+			temp = 0;
+			spyProb[players.indexOf(c)] = 0;
+			for (int i = 0; i < worldProb.length; i++) {//Sum probability of someone being a spy over all worlds
+				if(worldSpies[i].indexOf(c) != -1){
+					spyProb[players.indexOf(c)] += worldProb[i];
+					count++;
 				}
 			}
-		} else {
-			for (int i = 0; i < worldProb.length; i++) { // Find lowest probability world
-				temp = -1;
-				if (worldProb[i] >= temp) {
-					temp = worldProb[i];
-					World = worldSpies[i];// Highest Probability world ie lowest probability spies
-					//System.out.println("Lowest Probability World found = " + World);
-				}
-			}
-			// Lowest probability worlds now found need to utilize by nominating from them
-			while(n < number){
-				if(nom.indexOf(players.toCharArray()[n]) == -1 && World.indexOf(players.toCharArray()[n])==-1)
-					nom = nom + players.toCharArray()[n];
-				n++;
-			}
+			spyProb[players.indexOf(c)] /= count; //get average by dividing by number of worlds
+			//System.out.println( c + " Has Trustworthiness = " + (1-spyProb[players.indexOf(c)]));
 		}
+			
+		
+
+		while (n < number) {
+			temp = 0;
+			for (int i = 0; i < players.length(); i++) { //Find maximum of complement of each being spy ie
+				if((1-spyProb[i]) > temp && nom.indexOf(players.toCharArray()[i])==-1)//Find probability each is resistance ensuring no duplicates
+					temp = spyProb[i];
+			}
+			count = 0;
+			for( int i = 0; i<spyProb.length; i++){ //Locate the most trustworthy
+				if( spyProb[i] == temp && nom.indexOf(players.toCharArray()[i])==-1)
+					break;
+				count ++;
+			}
+			nom += players.toCharArray()[count];
+			//System.out.println(nom);
+			//spyProb[count] = 1; //Set the probability that they are spies to 1 so they won't be considered again
+			n++;
+		}
+		
+		
+		// }
 		//System.out.println("Nomination Complete");
 		return nom;
 	}
@@ -199,8 +256,8 @@ public class BayesAgent implements Agent{
 	* @return true, if the agent votes for the mission, false, if they vote against it.
 	* */
 	public boolean do_Vote() {
-		boolean multSpyProb = random.nextBoolean();//This is what the genetic algorithm will give
-		boolean noSpyProb = false;
+		boolean multVoteSpyProb = random.nextBoolean();//This is what the genetic algorithm will give
+		boolean noVoteSpyProb = false;
 		
 		if(spy)
 		{
@@ -212,26 +269,44 @@ public class BayesAgent implements Agent{
 					spynum++;
 			}
 			if(spynum >1) //Check for multiple spies
-				return multSpyProb;
+				return multVoteSpyProb;
 			else if (spynum == 0)
-				return noSpyProb;
+				return noVoteSpyProb;
 			else
 				return true;
 		}
 		else
-		{
-			if(proposed.indexOf(name) == -1)
-				return false; //Do not approve mission not containing self
-			double trust = 1.0; //Default of 1 for including self
-			int n = proposed.length();
-			for(char c : proposed.toCharArray())
-			{
-				if(c != name.charAt(0) && spyState.containsKey(c)){
-					trust += spyState.get(c);
-				}
+ {
+			if(firstMiss){ // Resistance always vote yes for first mission
+				firstMiss = false;
+				return true;
 			}
-			trust /= n;
-			return  true;//(trust >= 0.5);
+			
+			int count;
+			double temp;
+			double[] spyProb = new double[players.length()];
+			double ResistanceVoteThresh = 0.5;
+			for (char c : players.toCharArray()) {
+				count = 0;
+				temp = 0;
+				spyProb[players.indexOf(c)] = 0;
+				for (int i = 0; i < worldProb.length; i++) {// Sum probability of someone being a spy over all worlds
+					if (worldSpies[i].indexOf(c) != -1) {
+						spyProb[players.indexOf(c)] += worldProb[i];
+						count++;
+					}
+				}
+				spyProb[players.indexOf(c)] /= count; // get average by dividing by number of worlds
+				//System.out.println(c + " Has Trustworthiness = " + (1 - spyProb[players.indexOf(c)]));
+			}
+
+			temp = 1.0;
+			for (int i = 0; i < proposed.length(); i++) { // Finding lowest probability of resistance ie
+				if ((1 - spyProb[i]) <= temp && proposed.indexOf(players.toCharArray()[i]) == -1)// Find highest probability of spy
+					temp = spyProb[i];
+			}
+
+			return (temp < ResistanceVoteThresh); 
 		}
 	}
 
@@ -260,13 +335,21 @@ public class BayesAgent implements Agent{
   public boolean do_Betray(){
 		if(!spy)
 			return false;
-		int spynum = 0;
-		for(char c : proposed.toCharArray()) //Count spies on mission
-		{
-			if(spyState.get(c) != 0)
-				spynum++;
-		}
-		return (spynum < mission.length()); //Betray only if the mission does not consist only of spies
+		boolean multVoteSpyProb = random.nextBoolean();//This is what the genetic algorithm will give
+		boolean noVoteSpyProb = false;
+		
+			int spynum = 0;
+			for(char c : proposed.toCharArray()) //Count known spies on proposed mission
+			{
+				if(spies.indexOf(c) != -1)
+					spynum++;
+			}
+			if(spynum >1) //Check for multiple spies
+				return multVoteSpyProb;
+			else if (spynum == 0)
+				return noVoteSpyProb;
+			else
+				return true;
    }  
 
   /**
@@ -317,7 +400,7 @@ public class BayesAgent implements Agent{
 				}else if(mission.indexOf(worldSpies[i].charAt(0)) >= 0 || mission.indexOf(worldSpies[i].charAt(1))>=0){
 					if(traitors>1){ 	//checks if more traitors than there are spies on the mission in this world
 						worldProb[i] = 0;
-						ProbAGivW[i] = 0;
+						//ProbAGivW[i] = 0;
 					}
 					System.out.println("1 SPY");
 					//1 spy on the mission in this world
@@ -331,7 +414,7 @@ public class BayesAgent implements Agent{
 				}else{
 					if(traitors>0){ 	//checks if more traitors than there are spies on the mission in this world
 						worldProb[i] = 0;
-						ProbAGivW[i] = 0;
+						//ProbAGivW[i] = 0;
 					}
 					System.out.println("NO SPIES");
 					//0 Spies on the mission in this world
@@ -367,15 +450,14 @@ public class BayesAgent implements Agent{
 	  String World = "";
 	  double temp = 0.0;
 	  
-		for (int i = 0; i < worldProb.length; i++) { // Find lowest probability world
+		for (int i = 0; i < worldProb.length; i++) { // Find Highest probability world
 			temp = 0;
 			if (worldProb[i] > temp) {
 				temp = worldProb[i];
-				World = worldSpies[i]; // Lowest Probability world ie lowest probability spies
-				System.out.println("Highest Probability World found = " + World);
+				World = worldSpies[i]; // Highest Probability world ie highest probability spies
 			}
 		}
-		maxWorldProb = temp;
+		System.out.println("Highest Probability World found = " + World);
 		return World;
   }
 

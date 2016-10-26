@@ -291,7 +291,7 @@ public class Game{
    **/
   public static void main(String[] args){
 	  int result = 0;
-	  int size = 5; //Seems to give consistent results at 10000 games (within 1%)
+	  int size = 10000; //Seems to give consistent results at 10000 games (within 1%)
 	  for (int i = 0; i < size; i++){
 		  Game g = new Game();
 		  g.addPlayer(new NaiveAgent());
@@ -299,6 +299,7 @@ public class Game{
 		  g.addPlayer(new NaiveAgent());
 		  g.addPlayer(new NaiveAgent());
 		  g.addPlayer(new BayesAgent());
+
 		  System.out.println("Added all players");
 		  g.setup();
 		  System.out.println("Finished setup");
