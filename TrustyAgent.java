@@ -23,21 +23,17 @@ public class TrustyAgent implements Agent{
 	private double multSpyBetrayProb = 0.8;
 	private double allSpyBetrayProb = 0;
 	
-	private double goodNomValue = 0;
-	private double goodVoteValue = 0;
-	private double goodMissionValue = 0.1;
+	private double goodNomValue = 0.2;
+	private double goodVoteValue = 0.2;
+	private double goodMissionValue = 0.3;
 	private double badNomValue = 0.1;
 	private double badVoteValue = 0.4;
-	private double badMissionValue = 0.3;
+	private double badMissionValue = 0.5;
 	
 	public TrustyAgent(){
 		rand = new Random();
 		spyState = new HashMap<Character, Double>();
-	}
-	
-	public String name(){
-		return "Trusty";
-	}
+	}  
 
 
 	/**
@@ -121,8 +117,8 @@ public class TrustyAgent implements Agent{
 		}
 		else
 		{
-			if(proposed.indexOf(name) == -1)
-				return false; //Do not approve mission not containing self
+			if(proposed.indexOf(name) == -1 && ((players.length()-spies.length()-1) < proposed.length()) )
+				return false; //Do not approve mission not containing self if that means the mission will contain a spy
 			double trust = 1.0; //Default of 1 for including self
 			int n = proposed.length();
 			for(char c : proposed.toCharArray())

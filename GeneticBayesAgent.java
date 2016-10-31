@@ -35,10 +35,29 @@ public class GeneticBayesAgent implements Agent{
 	private double allSpyBetrayProb = 0;
 	private double teamThreshold = 0.5;
 	
+	private double dumbProb = 0.3; //Value used to balance effects of malice v incompetence
 	private ArrayList<String> worldSpiesList = new ArrayList<String>();
 	
 	public GeneticBayesAgent(Genome dna){
 		this.dna = dna;
+		noSpyVoteProb = dna.noSpyVoteProb;
+		multSpyVoteProb = dna.multSpyVoteProb;
+		onlySpyBetrayProb = dna.onlySpyBetrayProb;
+		multSpyBetrayProb = dna.multSpyBetrayProb;
+		allSpyBetrayProb = dna.allSpyBetrayProb;
+		teamThreshold = dna.teamThreshold;
+		taboos = new HashSet<String>();
+	    rand = new Random();
+	}
+	
+	public GeneticBayesAgent(){
+		dna = new Genome(0);
+		dna.noSpyVoteProb = 0.05;
+		dna.multSpyVoteProb = 0.5;
+		dna.onlySpyBetrayProb = 0.9;
+		dna.multSpyBetrayProb = 0.8;
+		dna.allSpyBetrayProb = 0.1;
+		dna.teamThreshold = 0.8;
 		noSpyVoteProb = dna.noSpyVoteProb;
 		multSpyVoteProb = dna.multSpyVoteProb;
 		onlySpyBetrayProb = dna.onlySpyBetrayProb;
@@ -179,7 +198,7 @@ public class GeneticBayesAgent implements Agent{
 			double best = 1;
 			int bestID = 0;
 			for (int i = 0; i < players.length(); i++) { //Find minimum probability of not being a spy i.e
-				if((spyProb[i]) <= best && nom.indexOf(players.toCharArray()[i])==-1) {//Find probability each is resistance ensuring no duplicates
+				if((spyProb[i]) < best && nom.indexOf(players.toCharArray()[i])==-1) {//Find probability each is resistance ensuring no duplicates
 					best = spyProb[i];
 					bestID = i;
 				}
@@ -279,7 +298,50 @@ public class GeneticBayesAgent implements Agent{
 	 *            the names of the agents who voted for the mission
 	 **/
   public void get_Votes(String yays){
-    
+		//Check taboo set
+		boolean bad = false;
+		for(String s : taboos)
+		{
+			if(subset(s,proposed)){ //If the proposed mission is a superset of a set known to contain a spy, then the proposed mission contains a spy
+				bad = true;
+				break;
+			}
+		}
+		if(bad && !solved)
+		{
+			double[] ProbAGivW = new double[worldProb.length];
+			double ProbA = 0;
+			for(int i = 0; i<worldProb.length ; i++){
+				int spies_voted= 0; //Number of spies that voted yes if this is the correct world
+				for(int j=0; j<worldSpies[i].length(); j++)
+				{
+					if(yays.indexOf(worldSpies[i].charAt(j)) != -1)
+					spies_voted++;
+				}
+				//given this is the world what is the probability that these people would have voted yes
+				ProbAGivW[i] = 1.0;
+				for(char c : yays.toCharArray())
+				{
+					if(worldSpies[i].indexOf(c) == -1) //Not a spy in this world
+						ProbAGivW[i] *= dumbProb;
+					else //Is a spy in this world
+						ProbAGivW[i] *= (1-dumbProb);
+				}
+				ProbA += ProbAGivW[i]*worldProb[i];
+				
+			}
+			for(int i = 0; i<worldProb.length; i++){
+				if(ProbA > 0)
+				{
+					worldProb[i] = ProbAGivW[i]*worldProb[i]/(ProbA);
+					//System.out.println(name+": "+worldSpies[i]+ " HAS PROBABILITY = " + worldProb[i]);
+				}
+				if(worldProb[i]>=1){
+					//System.out.println(name+": "+"SOLVED! "+worldSpies[i]+" are spies");
+					solved = true;
+				}
+			}	
+		}
   }
   /**
    * Reports the agents being sent on a mission.
