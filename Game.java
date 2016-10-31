@@ -324,10 +324,10 @@ public class Game{
    **/
   public static void main(String[] args){
 	  int BotWins[] = new int[3];
-	  //result = Zeros(4,numPlayers);
-	  int sets = 10000;
 
-	  for(int b = 0; b < sets; b++){
+	  //int sets = 10000;
+
+	  //for(int b = 0; b < sets; b++){
 		  int size = 10000;
 		  int gameSize = 5;
 		  boolean firstTime = true;
@@ -341,29 +341,29 @@ public class Game{
 		  dna.allSpyBetrayProb = 0;
 		  dna.teamThreshold = 0.5;
 
-		  for (int i = 0; i < size; i++){
+		  for (int p = 0; p < size; p++){
 			  Game g = new Game();
 			  numPlayers = 0;
 			  int l = 0;
 			  Random rand = new Random();
-			  while( l<gameSize){
-				  int pick = rand.nextInt(3);
-
-				  if(pick == 0){
-					  g.addPlayer(new GeneticBayesAgent(dna));
-				  }else if(pick == 1){
-					  g.addPlayer(new TrustyAgent());
-				  }else{
-					  g.addPlayer(new NaiveAgent());
-				  }
-				  l++;
-				  //		  g.addPlayer(new GeneticBayesAgent(dna));
-				  //		  g.addPlayer(new TrustyAgent());
-				  //		  g.addPlayer(new NaiveAgent());
-				  //		  g.addPlayer(new TrustyAgent());
-				  //		  g.addPlayer(new GeneticBayesAgent(dna));
-				  //		  g.addPlayer(new GeneticBayesAgent(dna));
-			  }
+//			  while( l<gameSize){
+//				  int pick = rand.nextInt(3);
+//
+//				  if(pick == 0){
+//					  g.addPlayer(new GeneticBayesAgent(dna));
+//				  }else if(pick == 1){
+//					  g.addPlayer(new TrustyAgent());
+//				  }else{
+//					  g.addPlayer(new NaiveAgent());
+//				  }
+//				  l++;
+				  		  g.addPlayer(new GeneticBayesAgent(dna));
+				  		  g.addPlayer(new TrustyAgent());
+				  		  g.addPlayer(new NaiveAgent());
+				  		  g.addPlayer(new TrustyAgent());
+				  		  g.addPlayer(new GeneticBayesAgent(dna));
+				  		  g.addPlayer(new GeneticBayesAgent(dna));
+			  //}
 			  g.setup();
 			  System.out.println("NUMPLAYERS" + numPlayers);
 
@@ -388,14 +388,26 @@ public class Game{
 		  System.out.println("Bot Name		Spy Win Rate		Resistance Win Rate			OVERALL");
 		  double max = 0;
 		  String BestBot = "FAILED";
+		  int SpyWins = 0;
+		  int SpyGames = 0;
+		  int ResWins = 0;
+		  int ResGames = 0;
+		  
 		  for(int i = 0;i < numPlayers ; i++){
 			  System.out.println(botNames.get(i) + "			" + (double)result[0][i]/result[2][i]*100 + "%"+ "			" + (double)result[1][i]/result[3][i]*100 + "%" + "			" + (double)(result[1][i]+result[0][i])/(result[2][i]+result[3][i])*100 + "%"  );
+			  SpyWins = result[0][i];
+			  SpyGames = result[2][i];
+			  ResWins = result[1][i];
+			  ResGames = result[3][i];
 			  if((double)(result[1][i]+result[0][i])/(result[2][i]+result[3][i])*100>=max){
 				  max = (double)(result[1][i]+result[0][i])/(result[2][i]+result[3][i])*100;
 				  BestBot = botNames.get(i);
 			  }
 		  }
-
+		  
+		  System.out.println("Spy win Rate = " + (double)SpyWins/SpyGames*100);
+		  System.out.println("Resistance win Rate = " + (double)ResWins/ResGames*100);
+		  
 		  if(BestBot.equals("Naive")){
 			  BotWins[0]++;
 			  System.out.println("Naive Wins " + BotWins[0]);
@@ -406,10 +418,10 @@ public class Game{
 			  BotWins[2]++;
 			  System.out.println("Bayes Wins " + BotWins[2]);
 		  }
-	  }
-	  System.out.println("SUCCESS RATE OF NAIVE = " + (double)BotWins[0]/sets*100 + "%");
-	  System.out.println("SUCCESS RATE OF Trusty = " + (double)BotWins[1]/sets*100 + "%");
-	  System.out.println("SUCCESS RATE OF Bayes = " + (double)BotWins[2]/sets*100 + "%");
+	  //}
+//	  System.out.println("SUCCESS RATE OF NAIVE = " + (double)BotWins[0]/sets*100 + "%");
+//	  System.out.println("SUCCESS RATE OF Trusty = " + (double)BotWins[1]/sets*100 + "%");
+//	  System.out.println("SUCCESS RATE OF Bayes = " + (double)BotWins[2]/sets*100 + "%");
   }
 }  
         
