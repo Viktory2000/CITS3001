@@ -17,6 +17,10 @@ public class NaiveAgent implements Agent{
 	public NaiveAgent(){
 		spyState = new HashMap<Character, Integer>();
 	}  
+	
+	public String name(){
+		return "Naive";
+	}
 
 
 	/**

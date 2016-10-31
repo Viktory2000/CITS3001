@@ -49,6 +49,10 @@ public class GeneticBayesAgent implements Agent{
 	    rand = new Random();
 	}
 	
+	public String name(){
+		return "Genetic Bayes";
+	}
+	
     // The method that prints all possible strings of length k.  It is
     //  mainly a wrapper over recursive function printAllKLengthRec()
     public void printAllKLength(String set, int k) {
