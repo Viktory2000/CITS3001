@@ -21,6 +21,10 @@ public class RandomAgent implements Agent{
   public RandomAgent(){
     random = new Random();
   }
+  
+	public String name(){
+		return "Random";
+	}
 
   /**
    * Reports the current status, inlcuding players name, the name of all players, the names of the spies (if known), the mission number and the number of failed missions

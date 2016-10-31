@@ -84,5 +84,11 @@ public interface Agent{
    * @param accused the names of the Agents being Accused, concatenated in a String.
    * */
   public void get_Accusation(String accuser, String accused);
+  
+  /**
+   * Returns the name of that bot for use in statistics
+   * @return String name of bot
+   */
+  public String name();
 
 }

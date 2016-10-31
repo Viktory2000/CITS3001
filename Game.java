@@ -12,7 +12,7 @@ public class Game{
   private String playerString = "";
   private String spyString = "";
   private String resString = "";
-  private int numPlayers = 0;
+  private static int numPlayers = 0;
   private static final int[] spyNum = {2,2,3,3,3,4}; //spyNum[n-5] is the number of spies in an n player game
   private static final int[][] missionNum = {{2,3,2,3,3},{2,3,4,3,4},{2,3,3,4,4},{3,4,4,5,5},{3,4,4,5,5},{3,4,4,5,5}};
                                     //missionNum[n-5][i] is the number to send on mission i in a  in an n player game
@@ -21,7 +21,8 @@ public class Game{
   private boolean logging = false;
   private boolean started = false;
   private long stopwatch = 0;
-
+  
+  private static ArrayList<String> botNames = new ArrayList<>();
 
   /**
    * Creates an empty game.
@@ -82,6 +83,7 @@ public class Game{
       Character name = (char)(65+numPlayers++);
       players.put(name, a);
       log("Player "+name+" added.");
+      botNames.add(a.name());
     }
   }
 
@@ -106,6 +108,7 @@ public class Game{
       started= true;
       log("Game set up. Spys allocated");
     }
+    
   }
 
   /** 
@@ -225,12 +228,30 @@ public class Game{
     return traitors;  
   }
 
+  public static int[][] matrixAdd(int[][] A, int[][] B)
+  {
+      // Check if matrices have contents
+      //if ((A.length < 0) || (A[0].length < 0)) return B;
+      //if ((B.length < 0) || (B[0].length < 0)) return A;
+
+      // create new matrix to store added values in
+
+      int[][] C = new int[A.length][A[0].length];
+      for (int i = 0; i < A.length; i++) {
+          for (int j = 0; j < A[0].length; j++) {
+              C[i][j] = A[i][j] + B[i][j];
+          }
+      }
+      return C;
+  }
+  
   /**
    * Conducts the game play, consisting of 5 rounds, each with a series of nominations and votes, and the eventual mission.
    * It logs the result of the game at the end.
    * */
-  public int play(){
+  public int[][] play(){
     int fails = 0;
+    int[][] playStat = new int[4][numPlayers];
     for(int round = 1; round<=5; round++){
       String team = nominate(round);
       int voteRnd = 0;
@@ -258,48 +279,99 @@ public class Game{
           stopwatchOff(100,c);
         }
       }  
-    }
+
     log("The Government Spies were "+spyString+".");
     
-		if (spyString.indexOf('E') >= 0) {// ie E is a spy
+    }
+
+    for(int i = 0;i < numPlayers ; i++){
+    	System.out.println(playStat[0][i]);
+    	System.out.println("CHARACTER FOR TESTIN " + (char)(65+i));
+		if (spyString.indexOf((char)(65+i)) >= 0) {// ie E is a spy
 			//log("E is a spy");
 			if (fails > 2) {
 				log("Government Wins! " + fails + " missions failed.");
-				return 1;
+				playStat[0][i]++;
+				playStat[2][i]++;
 			} else {
 				log("Resistance Wins! " + fails + " missions failed.");
-				return 0;
+				//Bot Failed
+				playStat[2][i]++;
 			}
 		} else {
 			//log("E is a Resistance");
 			if (fails > 2) {
 				log("Government Wins! " + fails + " missions failed.");
-				return 0;
+				//Bot Failed
+				playStat[3][i]++;
 			} else {
 				log("Resistance Wins! " + fails + " missions failed.");
-				return 1;
+				playStat[1][i]++;
+				playStat[3][i]++;
 			}
 		}
+    }
+    
+
+    return playStat;
 	}
+  
 
   /**
    * Sets up game with random agents and plays
    **/
   public static void main(String[] args){
-	  int result = 0;
+
+	  //result = Zeros(4,numPlayers);
 	  int size = 10000;
+	  boolean firstTime = true;
+	  int[][] result = new int[4][numPlayers];
+		
+		Genome dna = new Genome(0);
+		dna.noSpyVoteProb = 0.1;
+		dna.multSpyVoteProb = 0.3;
+		dna.onlySpyBetrayProb = 0.9;
+		dna.multSpyBetrayProb = 0.9;
+		dna.allSpyBetrayProb = 0;
+		dna.teamThreshold = 0.5;
+	  
 	  for (int i = 0; i < size; i++){
 		  Game g = new Game();
-		  g.addPlayer(new RandomAgent());
-		  g.addPlayer(new RandomAgent());
-		  g.addPlayer(new RandomAgent());
-		  g.addPlayer(new RandomAgent());
-		  g.addPlayer(new RandomAgent());
+		  numPlayers = 0;
+		  
+		  g.addPlayer(new GeneticBayesAgent(dna));
+		  g.addPlayer(new TrustyAgent());
+		  g.addPlayer(new NaiveAgent());
+		  g.addPlayer(new TrustyAgent());
+		  g.addPlayer(new GeneticBayesAgent(dna));
 		  g.setup();
-		  result += g.play();
-		  //System.out.println(result);
+		  System.out.println("NUMPLAYERS" + numPlayers);
+
+		  //result = matrixAdd(result , g.play());
+		    if(firstTime){
+				result = new int[4][numPlayers];
+		    	firstTime = false;
+		    	System.out.println("FirstTime");
+		        }
+		  int[][] temp = g.play();
+	      for (int k = 0; k < result.length; k++) {
+	          for (int j = 0; j < result[0].length; j++) {
+	              result[k][j] = result[k][j] + temp[k][j];
+	              System.out.println("RESULT UPDATE" + result[k][j]);
+	          }
+	      }  
+		  //result = g.play();
+		  //System.out.println(result[0][0]);
+
 	  }
-	  System.out.println("SUCCESS RATE OF NAIVE = " + (double)result/size*100 + "%");
+	  
+	  System.out.println("Bot Name		Spy Win Rate		Resistance Win Rate			OVERALL");
+	  
+	  for(int i = 0;i < numPlayers ; i++){
+		  System.out.println(botNames.get(i) + "			" + (double)result[0][i]/result[2][i]*100 + "%"+ "			" + (double)result[1][i]/result[3][i]*100 + "%" + "			" + (double)(result[1][i]+result[0][i])/(result[2][i]+result[3][i])*100 + "%"  );
+	  }
+	  
+	  //System.out.println("SUCCESS RATE OF NAIVE = " + (double[])result/size*100 + "%");
   }
 }  
         
