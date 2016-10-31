@@ -49,10 +49,6 @@ public class GeneticBayesAgent implements Agent{
 	    rand = new Random();
 	}
 	
-	public String name(){
-		return "Genetic Bayes";
-	}
-	
     // The method that prints all possible strings of length k.  It is
     //  mainly a wrapper over recursive function printAllKLengthRec()
     public void printAllKLength(String set, int k) {
@@ -183,7 +179,7 @@ public class GeneticBayesAgent implements Agent{
 			double best = 1;
 			int bestID = 0;
 			for (int i = 0; i < players.length(); i++) { //Find minimum probability of not being a spy i.e
-				if((spyProb[i]) < best && nom.indexOf(players.toCharArray()[i])==-1) {//Find probability each is resistance ensuring no duplicates
+				if((spyProb[i]) <= best && nom.indexOf(players.toCharArray()[i])==-1) {//Find probability each is resistance ensuring no duplicates
 					best = spyProb[i];
 					bestID = i;
 				}
@@ -212,6 +208,10 @@ public class GeneticBayesAgent implements Agent{
 	* */
 	public boolean do_Vote() {
 		
+		if(missionNumber == 0)//Always vote yes for first mission
+				return true;
+
+		
 		if(leader.equals(name)) //Always vote for missions that I proposed
 			return true;
 			
@@ -231,13 +231,11 @@ public class GeneticBayesAgent implements Agent{
 			else if (spynum == 0)
 				return doProb(noSpyVoteProb);
 			else
-				return true;
+				return true; //Vote yes if there is exactly one spy
 		}
 		else
 		{
-			if(missionNumber == 0)// Resistance always vote yes for first mission
-				return true;
-
+	
 			//Check taboo set
 			for(String s : taboos)
 			{
@@ -260,7 +258,15 @@ public class GeneticBayesAgent implements Agent{
 			double noSpyProb =1; //Probability the nominated mission contains 0 spies
 			for(char c : proposed.toCharArray())
 				noSpyProb *= (1-spyProb[players.indexOf(c)]);
-			//System.out.println(name+": "+"Probability of no spies: "+noSpyProb);
+
+			double myNomNoSpyProb =1; //Probability the mission I would nominate contains 0 spies
+			for(char c : myNom.toCharArray())
+				myNomNoSpyProb *= (1-spyProb[players.indexOf(c)]);
+			
+			double eps = 1e-4;
+			if(noSpyProb >= myNomNoSpyProb-eps) //Vote yes if the mission is just as good as what I would nominate
+				return true;
+			
 			return (noSpyProb > teamThreshold); //Vote yes if it is sufficiently likely that the proposed mission contains no spies
 		}
 	}
