@@ -1,8 +1,11 @@
+package s21494052;
+
 import java.util.*;
 import java.io.*;
 /**
- * A Class to represent a single game of resistance
- * @author Tim French
+ * A Class to represent a game of resistance used for genetics simulations
+ * Modified from Tim French's version to enable a list of genomes to be passed and results to be returned
+ * @author Lewis Tolonen / 21577338 Viktor Fidanovsi 21494052
  * */
 
 public class FitGame{
@@ -223,7 +226,8 @@ public class FitGame{
 
   /**
    * Conducts the game play, consisting of 5 rounds, each with a series of nominations and votes, and the eventual mission.
-   * It logs the result of the game at the end.
+   * At the end a map of each players result is returned
+   * @return a map of each players score
    * */
   public Map<Integer,Integer> play(){
     int fails = 0;
@@ -284,7 +288,9 @@ public class FitGame{
 
 
   /**
-   * Sets up game with a set of agents
+   * Sets up game with a set of agents from a list of genomes
+   * @param gens list of genomes to be used
+   * @return map of each players score
    **/
 	public static Map<Integer,Integer> playFitGame(ArrayList<Genome> gens)
 	{

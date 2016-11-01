@@ -1,4 +1,12 @@
+package s21494053_and_21577338;
+
+import cits3001_2016s2.*;
 import java.util.*;
+
+/**
+ * A class used to represent the genome of a genetic agent
+ * @author Lewis Tolonen / 21577338 Viktor Fidanovsi 21494052
+ **/
 
 class Genome implements Comparable<Genome>
 {
@@ -12,8 +20,11 @@ class Genome implements Comparable<Genome>
 	
 	public double teamThreshold;
 	
-	
-	public Genome(int id) //Create a random genome
+	/**
+	 *Construct a genome assigning parameters randomly
+	 *@param id identifying number of the genome to be created
+	 **/
+	public Genome(int id)
 	{
 		this.id = id;
 		fitness = 0;
@@ -27,7 +38,13 @@ class Genome implements Comparable<Genome>
 		teamThreshold = r.nextDouble();
 	}
 	
-	public Genome(int id, Genome parent1, Genome parent2) //Create a genome by random crossover between parents
+	/**
+	 *Construct a genome by crossover between two parents
+	 *@param id identifying number of the genome to be created
+	 *@param parent1 the first parent
+	 *@param parent2 the second parent
+	 **/
+	public Genome(int id, Genome parent1, Genome parent2)
 	{
 		this.id = id;
 		fitness = 0;
@@ -41,6 +58,10 @@ class Genome implements Comparable<Genome>
 		teamThreshold = (r.nextBoolean()) ? parent1.teamThreshold : parent2.teamThreshold;
 	}
 	
+	/**
+	 *Gets a string representation of the genomes parameters
+	 *@return the string representation
+	 **/
 	public String toString()
 	{
 		StringBuilder str = new StringBuilder();
@@ -55,6 +76,10 @@ class Genome implements Comparable<Genome>
 		return str.toString();
 	}
 	
+	/**
+	 *Mutate this genome randomly by a set amount
+	 *@param d the amount to mutate by
+	 **/
 	public void mutate(double d)
 	{
 		Random r = new Random();
@@ -76,6 +101,11 @@ class Genome implements Comparable<Genome>
 		teamThreshold = Math.max(0, Math.min(1, teamThreshold));
 	}
 	
+	/**
+	 *Comparator to allow genomes to be sorted by fitness
+	 *@param other genome to compare to
+	 *@return result of the comparison
+	 **/
 	public int compareTo(Genome other)
 	{
 		return -Integer.compare(fitness,other.fitness);

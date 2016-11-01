@@ -1,17 +1,29 @@
+package s21494053_and_21577338;
+
+import cits3001_2016s2.*;
 import java.util.*;
+import java.io.*;
+
+/**
+ * A class used to simulate the genetics of a population of genomes.
+ * @author Lewis Tolonen / 21577338 Viktor Fidanovsi 21494052
+ **/
 
 class Genetics
 {
-	public static final int GENS = 100;
-	public static final int POPULATION = 100;
-	public static final int GAMES_PER_GEN = 100;
+	public static final int GENS = 200; //Number of generations
+	public static final int POPULATION = 1000; //Population size
+	public static final int GAMES_PER_GEN = 1000; //Game played in each generation
 	
-	
+	/**
+	 *Performs the simulation
+	 **/s
 	public static void main(String[] args)
 	{
 		Random rand = new Random();
 		ArrayList<Genome> pop = new ArrayList<Genome>();
-		for(int i=0; i<POPULATION; i++)
+		
+		for(int i=0; i<POPULATION; i++) //Initialise population with random genomes
 		{
 			pop.add(new Genome(i)); //Genome id corresponds to position in list
 		}
@@ -22,7 +34,7 @@ class Genetics
 			for(int game = 0; game < GAMES_PER_GEN; game++)
 			{
 				System.out.println("Gen "+gen+" Game "+(game+1));
-				//Assign genomes to games of 5 randomly
+				//Assign genomes to games randomly
 				ArrayList<ArrayList<Genome>> games = new ArrayList<ArrayList<Genome>>();
 				ArrayList<Genome> remaining = new ArrayList<Genome>();
 				//Copy pop into remaining
@@ -65,9 +77,14 @@ class Genetics
 				newpop.add(g);
 			}
 			
+			//Display best performing genomes at the end of the generation
 			System.out.println(pop.get(0).toString()); //Display best genome
 			System.out.println(pop.get(1).toString()); //Display 2nd best genome
 			System.out.println(pop.get(2).toString()); //Display 3rd best genome
+			
+			//Do not alter population after final generation
+			if(gen == GENS-1)
+				break;
 			
 			//Refill population via cross over between random pairs of parents
 			System.out.println("Reproducing");
@@ -91,7 +108,21 @@ class Genetics
 			pop = newpop;
 			gen++;
 		}
+		//Make CSV for scatter plots
+		try
+		{
+			PrintWriter writer = new PrintWriter("Result.csv", "UTF-8");
+			writer.println("Fitness,multSpyVote,noSpyVote,onlySpyBetray,multSpyBetray,allSpyBetray,teamThresh");
+			for(Genome g : pop)
+			{
+				writer.println(g.fitness+","+g.multSpyVoteProb+","+g.noSpyVoteProb+","+g.onlySpyBetrayProb+","+g.multSpyBetrayProb+","+g.allSpyBetrayProb+","+g.teamThreshold);
+			}
+			writer.close();
+		}
+		catch(Exception e)
+		{
+			System.out.println("Error creating CSV file");
+		}
 	}
 	
-
 }
